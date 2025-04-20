@@ -13,7 +13,7 @@ from PIL import Image
 import pickle
 
 #load model
-with open('model.pkL','rb') as f:
+with open('model.pkl','rb') as f:
     model = pickle.load(f)
 
 
