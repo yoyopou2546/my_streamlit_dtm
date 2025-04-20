@@ -1,25 +1,44 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun Apr 20 10:46:10 2025
+Created on Sun Apr 20 13:53:10 2025
 
-@author: Kasidit
+@author: yoyop
 """
 
-import streamlit as st 
+import streamlit as st
+from tensorflow.keras.application.mobilenet_v2 import MobileNet_v2, decode_predictions, preprocess_input
+from tensorflow.keras.preprocessing import image
 import numpy as np
+from PIL import Image
 import pickle
 
-with open('dtm_trained_model.pkl','rb') as f :
-     dtm_model = pickle.load(f)
-     
-sepal_length = st.slider("Sepal Length (cm)", 4.0, 8.0, 5.1)
-sepal_width = st.slider("Sepal Width (cm)", 2.0, 4.5, 3.5)
-petal_length = st.slider("Petal Length (cm)", 1.0, 7.0, 1.4)
-petal_width = st.slider("Petal Width (cm)", 0.1, 2.5, 0.2)
+#load model
+with open('model.pkL','rb') as f:
+    model = pickle.load(f)
 
-# Predict button
-if st.button("Predict"):
-    input_data = np.array([[sepal_length, sepal_width, petal_length, petal_width]])
-    prediction = dtm_model.predict(input_data)
-    species = ['Setosa', 'Versicolor', 'Virginica']
-    st.success(f"The predicted species is: **{species[prediction[0]]}**")
+
+#set title application
+st.title("Image Classification with MobileNetV2 by Kittiphot Polaha")
+
+#file upload
+upload_file  = st.file_uploader("Upload image:",type=["jpg","jpeg","png"])
+
+if upload_file is not None:
+    #display image on screen
+    img = Image.open(upload_file)
+    st.image(img, caption="Upload Image")
+    
+    #preprocessing
+    img = img.resize((224,224))
+    x = image.img_to_array(img)
+    x = np.expand_dims(x, axis=0)
+    x = preprocess_input(x)
+    
+    #display prediction
+    preds = model.predict(x)
+    top_preds = decode_predictions(preds, top=3)[0]
+    
+    #display prediction
+    st.subheader("Prediction:")
+    for i, pred in enumerate(top_preds):
+        st.write(f"{i+1}. **{pred[1]}** - {round(pred[2]*100,2)}%")
